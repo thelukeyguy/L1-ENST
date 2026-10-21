@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENST L1 - Portail Étudiant & Ressources</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#10b981',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            amber: {
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- FontAwesome Icons & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #047857; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
+
+  <!-- ================= HEADER & NAVBAR ================= -->
+  <header class="sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Logo / Branding -->
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-900 to-brand-700 flex items-center justify-center text-amber-500 font-extrabold text-2xl shadow-lg border border-amber-500/30">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div>
+            <span class="text-xl font-bold tracking-tight text-brand-900 dark:text-emerald-400 block leading-tight">ENST Portal</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">École Nationale Supérieure du Tourisme</span>
+          </div>
+        </div>
+
+        <!-- Language & Dark Mode Controls -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          
+          <!-- Language Switcher -->
+          <div class="relative inline-block">
+            <select id="langSelect" onchange="changeLanguage(this.value)" class="appearance-none bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 pl-3 pr-8 rounded-lg border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-700 cursor-pointer">
+              <option value="fr">🇫🇷 FR (Par défaut)</option>
+              <option value="en">🇬🇧 EN</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-2.5 top-3 text-xs text-slate-400 pointer-events-none"></i>
+          </div>
+
+          <!-- Theme Toggle -->
+          <button onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition" aria-label="Toggle Theme">
+            <i class="fa-solid fa-moon dark:hidden"></i>
+            <i class="fa-solid fa-sun hidden dark:inline"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- ================= HERO BANNER ================= -->
+    <section class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-brand-900 via-brand-800 to-slate-900 text-white p-6 sm:p-10 shadow-2xl border border-brand-700/30">
+      <div class="relative z-10 max-w-2xl space-y-4">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold uppercase tracking-wider">
+          <i class="fa-solid fa-star text-amber-400"></i>
+          <span data-i18n="hero.badge">Promotions L1</span>
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight" data-i18n="hero.welcome">
+          Hello ENST Student 👋
+        </h1>
+        <p class="text-slate-200 text-sm sm:text-base leading-relaxed" data-i18n="hero.subtitle">
+          Accédez aux cours, polycopiés PDF/PPTX, sujets d'examens et fiches de révision pour l'ensemble des 9 modules de Licence 1.
+        </p>
+
+        <!-- Stats Counter -->
+        <div class="pt-4 grid grid-cols-3 gap-3 max-w-md">
+          <div class="bg-white/10 backdrop-blur rounded-xl p-3 text-center border border-white/10">
+            <span class="block text-xl font-bold text-amber-400">9</span>
+            <span class="text-[11px] text-slate-300" data-i18n="stats.modules">Modules L1</span>
+          </div>
+          <div class="bg-white/10 backdrop-blur rounded-xl p-3 text-center border border-white/10">
+            <span class="block text-xl font-bold text-emerald-300" id="statResourceCount">0</span>
+            <span class="text-[11px] text-slate-300" data-i18n="stats.resources">Documents</span>
+          </div>
+          <div class="bg-white/10 backdrop-blur rounded-xl p-3 text-center border border-white/10">
+            <span class="block text-xl font-bold text-amber-400" id="statBookmarks">0</span>
+            <span class="text-[11px] text-slate-300" data-i18n="stats.saved">Favoris</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute right-0 bottom-0 top-0 opacity-15 pointer-events-none hidden lg:flex items-center justify-center pr-12">
+        <i class="fa-solid fa-compass-drafting text-[240px] text-white"></i>
+      </div>
+    </section>
+
+    <!-- ================= NEWS & ANNOUNCEMENTS SECTION ================= -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+            <i class="fa-solid fa-newspaper text-lg"></i>
+          </div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-i18n="news.heading">Actualités & Annonces de la Promotion</h2>
+        </div>
+        <button onclick="toggleNewsForm()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-lg transition flex items-center space-x-1">
+          <i class="fa-solid fa-plus"></i>
+          <span data-i18n="news.addBtn">Publier une Annonce</span>
+        </button>
+      </div>
+
+      <!-- News Form -->
+      <div id="newsFormContainer" class="hidden bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border border-amber-500/30 space-y-3">
+        <h3 class="text-xs font-bold text-amber-500 uppercase tracking-wider" data-i18n="news.formTitle">Nouvelle Annonce</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input type="text" id="newsTitle" placeholder="Titre de l'annonce..." class="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 md:col-span-2">
+          <select id="newsTag" class="text-xs p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900">
+            <option value="Examen">📝 Examen / Plannings</option>
+            <option value="Important">⚠️ URGENT / Important</option>
+            <option value="Evenement">🎉 Événement / Conférence</option>
+          </select>
+        </div>
+        <textarea id="newsContent" rows="2" placeholder="Détails de l'annonce..." class="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900"></textarea>
+        <div class="flex justify-end">
+          <button onclick="submitNews()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition" data-i18n="news.publish">Publier</button>
+        </div>
+      </div>
+
+      <!-- News Cards Grid -->
+      <div id="newsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= CONTROLS & FILTERING ================= -->
+    <section class="space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <!-- Search bar -->
+        <div class="relative flex-grow max-w-lg">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+          <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Rechercher un cours, chapitre, mot-clé..." class="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-brand-700 focus:outline-none shadow-sm">
+        </div>
+
+        <!-- Upload PDF Button & Filter tabs -->
+        <div class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-2 md:pb-0">
+          <button onclick="openUploadModal()" class="text-xs font-bold px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 transition whitespace-nowrap flex items-center space-x-1.5 shadow-sm">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            <span>Ajouter PDF / Cours</span>
+          </button>
+          <button onclick="setTypeFilter('all')" id="btnFilterAll" class="filter-btn active text-xs font-semibold px-3 py-2 rounded-lg bg-brand-900 text-white transition whitespace-nowrap" data-i18n="filter.all">Tout</button>
+          <button onclick="setTypeFilter('cours')" id="btnFilterCours" class="filter-btn text-xs font-semibold px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 transition whitespace-nowrap" data-i18n="filter.cours">Cours</button>
+          <button onclick="setTypeFilter('td')" id="btnFilterTd" class="filter-btn text-xs font-semibold px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 transition whitespace-nowrap" data-i18n="filter.td">TP & TD</button>
+          <button onclick="setTypeFilter('examen')" id="btnFilterExamen" class="filter-btn text-xs font-semibold px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 transition whitespace-nowrap" data-i18n="filter.examens">Examens</button>
+          <button onclick="setTypeFilter('saved')" id="btnFilterSaved" class="filter-btn text-xs font-semibold px-3 py-2 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500/30 transition whitespace-nowrap flex items-center space-x-1">
+            <i class="fa-solid fa-bookmark text-amber-500"></i>
+            <span data-i18n="filter.bookmarks">Mes Favoris</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Module Chips Bar -->
+      <div id="moduleChips" class="flex items-center space-x-2 overflow-x-auto py-2 border-t border-b border-slate-200 dark:border-slate-800">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= CATALOG GRID ================= -->
+    <section>
+      <div id="resourcesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Resource Cards injected dynamically -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden text-center py-16 space-y-3">
+        <i class="fa-solid fa-folder-open text-5xl text-slate-300 dark:text-slate-700"></i>
+        <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="empty.text">Aucune ressource ne correspond à votre recherche.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= UPLOAD PDF & CREATE QUIZ MODAL ================= -->
+  <div id="uploadModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden space-y-4 p-6">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+          <i class="fa-solid fa-file-upload text-amber-500"></i>
+          <span>Ajouter un document & Quiz</span>
+        </h3>
+        <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Titre du document / cours</label>
+          <input type="text" id="uploadTitle" placeholder="Ex: Chapitre 1 - Introduction au Droit Touristique" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Module</label>
+            <select id="uploadModule" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+              <option value="management">Management Général</option>
+              <option value="comptabilite">Comptabilité Générale</option>
+              <option value="droit">Droit du Tourisme</option>
+              <option value="english">English for Tourism</option>
+              <option value="monuments">Monuments Touristiques</option>
+              <option value="marketing">Marketing Touristique</option>
+              <option value="informatique">Informatique & Bureautique</option>
+              <option value="maths">Mathématiques & Stats</option>
+              <option value="espanol">Español del Turismo</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Type de Document</label>
+            <select id="uploadType" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+              <option value="cours">Cours / Polycopié</option>
+              <option value="td">TP & TD</option>
+              <option value="examen">Sujet d'Examen</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Résumé / Aperçu du cours</label>
+          <textarea id="uploadDescription" rows="2" placeholder="Brève description des notions clés..." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+        </div>
+
+        <div class="border-t border-slate-200 dark:border-slate-700 pt-3">
+          <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-2 flex items-center space-x-1">
+            <i class="fa-solid fa-brain"></i>
+            <span>Créer le Quiz du PDF (Question d'Auto-évaluation)</span>
+          </h4>
+          <input type="text" id="quizQuestionInput" placeholder="Ex: Quelle est la définition juridique d'une agence de voyages ?" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 mb-2 outline-none">
+          
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <input type="text" id="quizOpt0" placeholder="Option A (Bonne réponse)" class="p-2 rounded-lg border border-emerald-500/50 bg-emerald-500/5 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+            <input type="text" id="quizOpt1" placeholder="Option B (Incorrecte)" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+            <input type="text" id="quizOpt2" placeholder="Option C (Incorrecte)" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+            <input type="text" id="quizOpt3" placeholder="Option D (Incorrecte)" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+          </div>
+          <span class="text-[10px] text-slate-400 italic">* L'Option A est configurée par défaut comme la réponse correcte.</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+        <button onclick="closeUploadModal()" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs">Annuler</button>
+        <button onclick="saveUploadedResource()" class="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow transition">Enregistrer PDF & Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-slate-900 border-t border-slate-800 text-slate-400 py-8 mt-12 text-xs">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+      <p class="font-medium text-slate-300">École Nationale Supérieure du Tourisme — ENST L1 Portal</p>
+      <p data-i18n="footer.rights">Plateforme pédagogique d'étude et de partage de ressources pour la 1ère Année Licence.</p>
+    </div>
+  </footer>
+
+  <!-- ================= RESOURCE PREVIEW MODAL ================= -->
+  <div id="previewModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col overflow-hidden">
+      
+      <div id="modalHeader" class="bg-brand-900 p-5 text-white flex items-center justify-between">
+        <div>
+          <span id="modalCategoryBadge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-500 text-slate-950">Cours</span>
+          <h3 id="modalResourceTitle" class="text-lg font-bold mt-1">Titre de la ressource</h3>
+        </div>
+        <button onclick="closePreviewModal()" class="text-slate-300 hover:text-white text-xl">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6">
+        
+        <div class="bg-slate-100 dark:bg-slate-900 rounded-xl p-6 text-center border border-slate-200 dark:border-slate-700 space-y-4">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500/20 text-brand-700 dark:text-emerald-400 text-3xl">
+            <i id="modalFileTypeIcon" class="fa-solid fa-file-pdf"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 dark:text-white text-sm" id="modalFileName">poly_cours.pdf</h4>
+            <p class="text-xs text-slate-500" id="modalModuleMeta">Module: Management Général</p>
+          </div>
+          <div class="flex items-center justify-center space-x-3 pt-2">
+            <a id="modalDownloadBtn" href="#" download class="bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow flex items-center space-x-2">
+              <i class="fa-solid fa-download"></i>
+              <span data-i18n="modal.download">Télécharger Fichier</span>
+            </a>
+            <button id="modalBookmarkBtn" onclick="toggleCurrentBookmark()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold text-xs px-4 py-2.5 rounded-lg flex items-center space-x-2">
+              <i class="fa-solid fa-bookmark"></i>
+              <span data-i18n="modal.save">Ajouter aux Favoris</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-2" data-i18n="modal.summary">Aperçu & Sommaire</h4>
+          <p id="modalDescription" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+        </div>
+
+        <!-- Quiz Block -->
+        <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-bold text-sm text-brand-900 dark:text-emerald-400 flex items-center space-x-2">
+              <i class="fa-solid fa-circle-question text-amber-500"></i>
+              <span data-i18n="quiz.title">Auto-Évaluation Rapide</span>
+            </h4>
+          </div>
+
+          <div id="quizContainer" class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+            <p id="quizQuestion" class="text-xs font-semibold text-slate-800 dark:text-slate-200"></p>
+            <div id="quizOptions" class="space-y-2"></div>
+            <div id="quizFeedback" class="text-xs font-bold hidden p-2.5 rounded-lg"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Load External Data Module -->
+  <script src="data.js"></script>
+
+  <!-- Application Logic -->
+  <script>
+    let currentLang = 'fr';
+    let selectedModule = 'all';
+    let selectedType = 'all';
+    let uploadedResources = JSON.parse(localStorage.getItem('enst_uploaded_resources') || '[]');
+    let bookmarks = new Set(JSON.parse(localStorage.getItem('enst_bookmarks') || '[]'));
+    let activeModalResource = null;
+
+    // Combine local storage with default seed resources if any
+    function getAllResources() {
+      const combined = [...uploadedResources];
+      if (typeof DEFAULT_RESOURCES !== 'undefined') {
+        DEFAULT_RESOURCES.forEach(res => {
+          if (!combined.some(r => r.id === res.id)) {
+            combined.push(res);
+          }
+        });
+      }
+      return combined;
+    }
+
+    /* RENDER RESOURCE GRID & CARDS */
+    function renderGrid(resources) {
+      const container = document.getElementById('resourcesGrid');
+      const emptyState = document.getElementById('emptyState');
+      if (!container) return;
+
+      if (resources.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      container.innerHTML = resources.map(res => {
+        const isBookmarked = bookmarks.has(res.id);
+        const moduleObj = ENST_MODULES.find(m => m.id === res.module) || {};
+        const moduleName = currentLang === 'fr' ? (moduleObj.nameFr || res.module) : (moduleObj.nameEn || res.module);
+
+        let typeBadgeClass = 'bg-brand-500/10 text-brand-700 dark:text-emerald-400';
+        let typeLabel = 'Cours';
+        if (res.type === 'td') {
+          typeBadgeClass = 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
+          typeLabel = 'TP & TD';
+        } else if (res.type === 'examen') {
+          typeBadgeClass = 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
+          typeLabel = 'Examen';
+        }
+
+        let iconClass = 'fa-file-pdf text-rose-500';
+
+        return `
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-lg ${typeBadgeClass}">
+                  ${typeLabel}
+                </span>
+                <button onclick="toggleBookmark('${res.id}', event)" class="text-slate-400 hover:text-amber-500 transition p-1">
+                  <i class="${isBookmarked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark text-base"></i>
+                </button>
+              </div>
+
+              <div class="flex items-start space-x-3">
+                <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900/80 text-xl flex-shrink-0">
+                  <i class="fa-solid ${iconClass}"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-brand-900 dark:group-hover:text-emerald-400 transition">
+                    ${res.title}
+                  </h3>
+                  <span class="text-[11px] text-slate-400 font-medium block mt-1">
+                    <i class="fa-solid ${moduleObj.icon || 'fa-book'} mr-1"></i>${moduleName}
+                  </span>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                ${res.description}
+              </p>
+
+              ${res.quiz ? `
+                <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold">
+                  <i class="fa-solid fa-brain"></i>
+                  <span>Quiz Inclus</span>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${res.format ? res.format.toUpperCase() : 'PDF'}</span>
+              <button onclick="openPreviewModal('${res.id}')" class="bg-slate-100 dark:bg-slate-700/60 hover:bg-brand-900 hover:text-white text-slate-700 dark:text-slate-200 px-3.5 py-1.5 rounded-lg font-bold transition flex items-center space-x-1.5 text-xs">
+                <span>Aperçu & Quiz</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Dark Mode Detection
+      if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+
+      // Language Detection
+      const savedLang = localStorage.getItem('enst_lang');
+      if (savedLang) {
+        currentLang = savedLang;
+        document.getElementById('langSelect').value = currentLang;
+      }
+
+      renderModuleChips();
+      renderNews();
+      updateUI();
+      applyFilters();
+    });
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('enst_lang', lang);
+      updateUI();
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    function updateUI() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) {
+          el.innerText = TRANSLATIONS[currentLang][key];
+        }
+      });
+
+      document.getElementById('statResourceCount').innerText = getAllResources().length;
+      renderModuleChips();
+      renderNews();
+      applyFilters();
+    }
+
+    /* UPLOAD & QUIZ CREATION HANDLERS */
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.remove('hidden');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.add('hidden');
+    }
+
+    function saveUploadedResource() {
+      const title = document.getElementById('uploadTitle').value.trim();
+      const module = document.getElementById('uploadModule').value;
+      const type = document.getElementById('uploadType').value;
+      const description = document.getElementById('uploadDescription').value.trim();
+      const qText = document.getElementById('quizQuestionInput').value.trim();
+      const opt0 = document.getElementById('quizOpt0').value.trim();
+      const opt1 = document.getElementById('quizOpt1').value.trim();
+      const opt2 = document.getElementById('quizOpt2').value.trim();
+      const opt3 = document.getElementById('quizOpt3').value.trim();
+
+      if (!title || !description) {
+        alert("Veuillez saisir au moins le titre et la description du cours.");
+        return;
+      }
+
+      let quizObj = null;
+      if (qText && opt0 && opt1) {
+        const opts = [opt0, opt1];
+        if (opt2) opts.push(opt2);
+        if (opt3) opts.push(opt3);
+
+        quizObj = {
+          q: qText,
+          options: opts,
+          correct: 0
+        };
+      }
+
+      const newRes = {
+        id: 'pdf-' + Date.now(),
+        title,
+        module,
+        type,
+        format: 'pdf',
+        description,
+        quiz: quizObj
+      };
+
+      uploadedResources.unshift(newRes);
+      localStorage.setItem('enst_uploaded_resources', JSON.stringify(uploadedResources));
+
+      // Reset Inputs
+      document.getElementById('uploadTitle').value = '';
+      document.getElementById('uploadDescription').value = '';
+      document.getElementById('quizQuestionInput').value = '';
+      document.getElementById('quizOpt0').value = '';
+      document.getElementById('quizOpt1').value = '';
+      document.getElementById('quizOpt2').value = '';
+      document.getElementById('quizOpt3').value = '';
+
+      closeUploadModal();
+      updateUI();
+    }
+
+    /* NEWS SYSTEM */
+    function toggleNewsForm() {
+      document.getElementById('newsFormContainer').classList.toggle('hidden');
+    }
+
+    function submitNews() {
+      const title = document.getElementById('newsTitle').value;
+      const tag = document.getElementById('newsTag').value;
+      const content = document.getElementById('newsContent').value;
+
+      if (!title || !content) return;
+
+      newsArticles.unshift({
+        id: 'news-' + Date.now(),
+        title,
+        tag,
+        date: 'Aujourd\'hui',
+        author: 'Étudiant L1',
+        content
+      });
+
+      document.getElementById('newsTitle').value = '';
+      document.getElementById('newsContent').value = '';
+      toggleNewsForm();
+      renderNews();
+    }
+
+    function renderNews() {
+      const grid = document.getElementById('newsGrid');
+      if (!grid) return;
+
+      grid.innerHTML = newsArticles.map(n => {
+        let tagColor = 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
+        if (n.tag === 'Important') tagColor = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30';
+        if (n.tag === 'Examen') tagColor = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30';
+
+        return `
+          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-[11px] mb-2">
+                <span class="font-bold px-2 py-0.5 rounded ${tagColor}">${n.tag}</span>
+                <span class="text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${n.date}</span>
+              </div>
+              <h4 class="font-bold text-slate-900 dark:text-white text-xs leading-snug mb-1">${n.title}</h4>
+              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">${n.content}</p>
+            </div>
+            <div class="pt-2 text-[10px] text-slate-400 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
+              <span>Par ${n.author}</span>
+              <span class="font-bold text-brand-900 dark:text-emerald-400">ENST Official</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* MODULE FILTERS */
+    function renderModuleChips() {
+      const container = document.getElementById('moduleChips');
+      if (!container) return;
+      container.innerHTML = ENST_MODULES.map(m => {
+        const isSelected = selectedModule === m.id;
+        const name = currentLang === 'fr' ? m.nameFr : m.nameEn;
+        const activeClass = isSelected 
+          ? 'bg-brand-900 text-white shadow-sm' 
+          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200';
+
+        return `
+          <button onclick="selectModule('${m.id}')" class="text-xs font-medium px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition whitespace-nowrap ${activeClass}">
+            <i class="fa-solid ${m.icon} ${isSelected ? 'text-amber-400' : 'text-slate-400'}"></i>
+            <span>${name}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectModule(modId) {
+      selectedModule = modId;
+      renderModuleChips();
+      applyFilters();
+    }
+
+    function setTypeFilter(type) {
+      selectedType = type;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-900', 'text-white');
+        btn.classList.add('bg-slate-200', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+      });
+
+      const activeMap = {
+        'all': 'btnFilterAll',
+        'cours': 'btnFilterCours',
+        'td': 'btnFilterTd',
+        'examen': 'btnFilterExamen',
+        'saved': 'btnFilterSaved'
+      };
+
+      const activeBtn = document.getElementById(activeMap[type]);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-200', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+        activeBtn.classList.add('bg-brand-900', 'text-white');
+      }
+
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const searchVal = document.getElementById('searchInput').value.toLowerCase();
+      const allRes = getAllResources();
+
+      const filtered = allRes.filter(res => {
+        const matchesModule = selectedModule === 'all' || res.module === selectedModule;
+        let matchesType = true;
+        if (selectedType === 'saved') {
+          matchesType = bookmarks.has(res.id);
+        } else if (selectedType !== 'all') {
+          matchesType = res.type === selectedType;
+        }
+
+        const matchesSearch = res.title.toLowerCase().includes(searchVal) || 
+                              res.description.toLowerCase().includes(searchVal);
+
+        return matchesModule && matchesType && matchesSearch;
+      });
+
+      renderGrid(filtered);
+      document.getElementById('statBookmarks').innerText = bookmarks.size;
+    }
+
+    /* MODAL & BOOKMARK CONTROLLERS */
+    function openPreviewModal(resId) {
+      const res = getAllResources().find(r => r.id === resId);
+      if (!res) return;
+
+      activeModalResource = res;
+      document.getElementById('modalResourceTitle').innerText = res.title;
+      document.getElementById('modalFileName').innerText = `${res.id}_${res.module}.${res.format || 'pdf'}`;
+      document.getElementById('modalDescription').innerText = res.description;
+
+      const mod = ENST_MODULES.find(m => m.id === res.module);
+      document.getElementById('modalModuleMeta').innerText = `Module: ${mod ? mod.nameFr : res.module}`;
+
+      const modalBookmarkBtn = document.getElementById('modalBookmarkBtn');
+      if (bookmarks.has(res.id)) {
+        modalBookmarkBtn.classList.add('text-amber-500');
+      } else {
+        modalBookmarkBtn.classList.remove('text-amber-500');
+      }
+
+      // Quiz inside modal per uploaded PDF
+      const qBox = document.getElementById('quizContainer');
+      if (res.quiz) {
+        qBox.classList.remove('hidden');
+        document.getElementById('quizQuestion').innerText = res.quiz.q;
+        document.getElementById('quizFeedback').classList.add('hidden');
+
+        document.getElementById('quizOptions').innerHTML = res.quiz.options.map((opt, idx) => `
+          <button onclick="checkModalQuiz(${idx}, ${res.quiz.correct})" class="w-full text-left text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-medium text-slate-700 dark:text-slate-300">
+            ${opt}
+          </button>
+        `).join('');
+      } else {
+        qBox.classList.add('hidden');
+      }
+
+      document.getElementById('previewModal').classList.remove('hidden');
+    }
+
+    function checkModalQuiz(selected, correct) {
+      const fb = document.getElementById('quizFeedback');
+      fb.classList.remove('hidden');
+      if (selected === correct) {
+        fb.className = "text-xs font-bold p-2.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30";
+        fb.innerText = "✅ Exact ! Bonne réponse.";
+      } else {
+        fb.className = "text-xs font-bold p-2.5 rounded-lg bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/30";
+        fb.innerText = "❌ Mauvaise réponse. Réessayez !";
+      }
+    }
+
+    function closePreviewModal() {
+      document.getElementById('previewModal').classList.add('hidden');
+      activeModalResource = null;
+    }
+
+    function toggleBookmark(resId, event) {
+      if (event) event.stopPropagation();
+      if (bookmarks.has(resId)) {
+        bookmarks.delete(resId);
+      } else {
+        bookmarks.add(resId);
+      }
+      localStorage.setItem('enst_bookmarks', JSON.stringify([...bookmarks]));
+      applyFilters();
+    }
+
+    function toggleCurrentBookmark() {
+      if (activeModalResource) {
+        toggleBookmark(activeModalResource.id);
+        const modalBookmarkBtn = document.getElementById('modalBookmarkBtn');
+        if (bookmarks.has(activeModalResource.id)) {
+          modalBookmarkBtn.classList.add('text-amber-500');
+        } else {
+          modalBookmarkBtn.classList.remove('text-amber-500');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
