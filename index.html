@@ -75,7 +75,7 @@
             </button>
 
             <div id="userInfoContainer" class="hidden flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
-              <img id="userAvatar" src="" class="w-6 h-6 rounded-full border border-emerald-500" alt="Admin">
+              <img id="userAvatar" src="" class="w-6 h-6 rounded-full border border-emerald-500" alt="User">
               <span id="userDisplayName" class="text-xs font-bold text-emerald-700 dark:text-emerald-400"></span>
               <span id="adminBadge" class="hidden text-[10px] bg-amber-500 text-slate-950 font-extrabold px-1.5 py-0.5 rounded uppercase">Admin</span>
               <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-500 text-xs ml-1" title="Déconnexion">
@@ -315,6 +315,13 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+    // Configurable Admin Email Allowlist
+    window.ADMIN_EMAILS = [
+      "admin@enst.dz",
+      "d.administration@enst.dz",
+      "admin.l1@gmail.com" // Add authorized admin emails here
+    ];
+
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
       apiKey: "DEMO_KEY",
       authDomain: "enst-portal.firebaseapp.com",
@@ -332,13 +339,18 @@
       try {
         const result = await signInWithPopup(auth, provider);
         window.currentUser = result.user;
-        updateAdminStatus(result.user);
+        checkAdminRights(result.user);
       } catch (err) {
-        console.warn("Auth popup failed or canceled. Enabling Demo Admin Mode.", err);
-        // Fallback demo admin toggle for offline preview environments
-        window.currentUser = { displayName: "Admin ENST", photoURL: "https://placehold.co/100x100/047857/ffffff?text=Admin" };
-        window.isAdmin = true;
-        renderAuthState();
+        console.warn("Auth popup failed or canceled. Prompting email for Demo Auth Mode.", err);
+        const demoEmail = prompt("Connexion Démo (Entrez un e-mail pour tester l'accès admin) :", "admin@enst.dz");
+        if (demoEmail) {
+          window.currentUser = {
+            displayName: demoEmail.split('@')[0],
+            email: demoEmail,
+            photoURL: "https://placehold.co/100x100/047857/ffffff?text=User"
+          };
+          checkAdminRights(window.currentUser);
+        }
       }
     };
 
@@ -354,15 +366,20 @@
     onAuthStateChanged(auth, (user) => {
       if (user) {
         window.currentUser = user;
-        updateAdminStatus(user);
+        checkAdminRights(user);
       } else {
         renderAuthState();
       }
     });
 
-    function updateAdminStatus(user) {
-      // Any signed in Google user or authorized email acts as admin
-      window.isAdmin = true;
+    function checkAdminRights(user) {
+      if (!user) {
+        window.isAdmin = false;
+      } else if (user.email && window.ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase())) {
+        window.isAdmin = true;
+      } else {
+        window.isAdmin = false;
+      }
       renderAuthState();
     }
 
@@ -376,12 +393,16 @@
         signInBtn.classList.add('hidden');
         userContainer.classList.remove('hidden');
         document.getElementById('userAvatar').src = window.currentUser.photoURL || 'https://placehold.co/100x100';
-        document.getElementById('userDisplayName').innerText = window.currentUser.displayName || 'Admin';
+        document.getElementById('userDisplayName').innerText = window.currentUser.displayName || window.currentUser.email || 'Étudiant';
 
         if (window.isAdmin) {
           document.getElementById('adminBadge').classList.remove('hidden');
           if (addNewsBtn) addNewsBtn.classList.remove('hidden');
           if (uploadPdfBtn) uploadPdfBtn.classList.remove('hidden');
+        } else {
+          document.getElementById('adminBadge').classList.add('hidden');
+          if (addNewsBtn) addNewsBtn.classList.add('hidden');
+          if (uploadPdfBtn) uploadPdfBtn.classList.add('hidden');
         }
       } else {
         signInBtn.classList.remove('hidden');
@@ -389,6 +410,10 @@
         if (addNewsBtn) addNewsBtn.classList.add('hidden');
         if (uploadPdfBtn) uploadPdfBtn.classList.add('hidden');
       }
+
+      // Re-render components to display/hide delete buttons based on role
+      if (typeof applyFilters === 'function') applyFilters();
+      if (typeof renderNews === 'function') renderNews();
     }
   </script>
 
@@ -398,15 +423,16 @@
     let selectedModule = 'all';
     let selectedType = 'all';
     let uploadedResources = JSON.parse(localStorage.getItem('enst_uploaded_resources') || '[]');
+    let deletedDefaultIds = new Set(JSON.parse(localStorage.getItem('enst_deleted_defaults') || '[]'));
     let bookmarks = new Set(JSON.parse(localStorage.getItem('enst_bookmarks') || '[]'));
     let activeModalResource = null;
 
-    // Combine local storage with default seed resources
+    // Combine local storage with default seed resources, excluding deleted ones
     function getAllResources() {
       const combined = [...uploadedResources];
       if (typeof DEFAULT_RESOURCES !== 'undefined') {
         DEFAULT_RESOURCES.forEach(res => {
-          if (!combined.some(r => r.id === res.id)) {
+          if (!deletedDefaultIds.has(res.id) && !combined.some(r => r.id === res.id)) {
             combined.push(res);
           }
         });
@@ -444,15 +470,22 @@
         }
 
         return `
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group relative">
             <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-lg ${typeBadgeClass}">
                   ${typeLabel}
                 </span>
-                <button onclick="toggleBookmark('${res.id}', event)" class="text-slate-400 hover:text-amber-500 transition p-1">
-                  <i class="${isBookmarked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark text-base"></i>
-                </button>
+                <div class="flex items-center space-x-1">
+                  ${window.isAdmin ? `
+                    <button onclick="deleteResource('${res.id}', event)" class="text-slate-400 hover:text-rose-500 transition p-1" title="Supprimer (Admin)">
+                      <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                  ` : ''}
+                  <button onclick="toggleBookmark('${res.id}', event)" class="text-slate-400 hover:text-amber-500 transition p-1">
+                    <i class="${isBookmarked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark text-base"></i>
+                  </button>
+                </div>
               </div>
 
               <div class="flex items-start space-x-3">
@@ -491,6 +524,30 @@
           </div>
         `;
       }).join('');
+    }
+
+    function deleteResource(resId, event) {
+      if (event) event.stopPropagation();
+      if (!window.isAdmin) return;
+
+      uploadedResources = uploadedResources.filter(r => r.id !== resId);
+      localStorage.setItem('enst_uploaded_resources', JSON.stringify(uploadedResources));
+
+      deletedDefaultIds.add(resId);
+      localStorage.setItem('enst_deleted_defaults', JSON.stringify([...deletedDefaultIds]));
+
+      bookmarks.delete(resId);
+      localStorage.setItem('enst_bookmarks', JSON.stringify([...bookmarks]));
+
+      updateUI();
+    }
+
+    function deleteNews(newsId, event) {
+      if (event) event.stopPropagation();
+      if (!window.isAdmin) return;
+
+      newsArticles = newsArticles.filter(n => n.id !== newsId);
+      renderNews();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -538,10 +595,7 @@
 
     /* UPLOAD & PDF FILE PROCESSING */
     function openUploadModal() {
-      if (!window.isAdmin) {
-        alert("Accès refusé : Seuls les administrateurs connectés peuvent téléverser des documents.");
-        return;
-      }
+      if (!window.isAdmin) return;
       document.getElementById('uploadModal').classList.remove('hidden');
     }
 
@@ -557,10 +611,7 @@
       const fileInput = document.getElementById('pdfFileInput');
       const file = fileInput.files[0];
 
-      if (!title || !description) {
-        alert("Veuillez remplir au moins le titre et la description.");
-        return;
-      }
+      if (!title || !description) return;
 
       let pdfDataUrl = null;
       let fileName = file ? file.name : "Document.pdf";
@@ -614,10 +665,7 @@
 
     /* NEWS SYSTEM */
     function toggleNewsForm() {
-      if (!window.isAdmin) {
-        alert("Accès refusé : Seuls les administrateurs connectés peuvent ajouter des annonces.");
-        return;
-      }
+      if (!window.isAdmin) return;
       document.getElementById('newsFormContainer').classList.toggle('hidden');
     }
 
@@ -633,7 +681,7 @@
         title,
         tag,
         date: 'Aujourd\'hui',
-        author: window.currentUser ? window.currentUser.displayName : 'Admin L1',
+        author: window.currentUser ? (window.currentUser.displayName || window.currentUser.email) : 'Admin L1',
         content
       });
 
@@ -657,7 +705,14 @@
             <div>
               <div class="flex items-center justify-between text-[11px] mb-2">
                 <span class="font-bold px-2 py-0.5 rounded ${tagColor}">${n.tag}</span>
-                <span class="text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${n.date}</span>
+                <div class="flex items-center space-x-2">
+                  <span class="text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${n.date}</span>
+                  ${window.isAdmin ? `
+                    <button onclick="deleteNews('${n.id}', event)" class="text-slate-400 hover:text-rose-500 transition" title="Supprimer l'annonce">
+                      <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                  ` : ''}
+                </div>
               </div>
               <h4 class="font-bold text-slate-900 dark:text-white text-xs leading-snug mb-1">${n.title}</h4>
               <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">${n.content}</p>
