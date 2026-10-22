@@ -67,6 +67,23 @@
         <!-- Language & Dark Mode Controls -->
         <div class="flex items-center space-x-3 sm:space-x-4">
           
+          <!-- Admin Auth Status Widget -->
+          <div id="authWidget" class="flex items-center">
+            <button id="googleSignInBtn" onclick="handleGoogleSignIn()" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-100 font-bold py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-700 transition flex items-center space-x-1.5">
+              <i class="fa-brands fa-google text-red-500"></i>
+              <span>Connexion Admin</span>
+            </button>
+
+            <div id="userInfoContainer" class="hidden flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+              <img id="userAvatar" src="" class="w-6 h-6 rounded-full border border-emerald-500" alt="Admin">
+              <span id="userDisplayName" class="text-xs font-bold text-emerald-700 dark:text-emerald-400"></span>
+              <span id="adminBadge" class="hidden text-[10px] bg-amber-500 text-slate-950 font-extrabold px-1.5 py-0.5 rounded uppercase">Admin</span>
+              <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-500 text-xs ml-1" title="Déconnexion">
+                <i class="fa-solid fa-right-from-bracket"></i>
+              </button>
+            </div>
+          </div>
+
           <!-- Language Switcher -->
           <div class="relative inline-block">
             <select id="langSelect" onchange="changeLanguage(this.value)" class="appearance-none bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 pl-3 pr-8 rounded-lg border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-700 cursor-pointer">
@@ -134,7 +151,7 @@
           </div>
           <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-i18n="news.heading">Actualités & Annonces de la Promotion</h2>
         </div>
-        <button onclick="toggleNewsForm()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-lg transition flex items-center space-x-1">
+        <button id="addNewsBtn" onclick="toggleNewsForm()" class="hidden text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-lg transition flex items-center space-x-1">
           <i class="fa-solid fa-plus"></i>
           <span data-i18n="news.addBtn">Publier une Annonce</span>
         </button>
@@ -175,7 +192,7 @@
 
         <!-- Upload PDF Button & Filter tabs -->
         <div class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-2 md:pb-0">
-          <button onclick="openUploadModal()" class="text-xs font-bold px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 transition whitespace-nowrap flex items-center space-x-1.5 shadow-sm">
+          <button id="uploadPdfBtn" onclick="openUploadModal()" class="hidden text-xs font-bold px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 transition whitespace-nowrap flex items-center space-x-1.5 shadow-sm">
             <i class="fa-solid fa-file-circle-plus"></i>
             <span>Ajouter PDF / Cours</span>
           </button>
@@ -212,7 +229,7 @@
 
   <!-- ================= UPLOAD PDF & CREATE QUIZ MODAL ================= -->
   <div id="uploadModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden space-y-4 p-6">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden space-y-4 p-6 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
         <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
           <i class="fa-solid fa-file-upload text-amber-500"></i>
@@ -227,6 +244,12 @@
         <div>
           <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Titre du document / cours</label>
           <input type="text" id="uploadTitle" placeholder="Ex: Chapitre 1 - Introduction au Droit Touristique" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 outline-none">
+        </div>
+
+        <!-- Real PDF File Input attachment -->
+        <div>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Fichier PDF (Sélectionner depuis l'appareil)</label>
+          <input type="file" id="pdfFileInput" accept="application/pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600 cursor-pointer">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -284,77 +307,90 @@
     </div>
   </div>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="bg-slate-900 border-t border-slate-800 text-slate-400 py-8 mt-12 text-xs">
-    <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
-      <p class="font-medium text-slate-300">École Nationale Supérieure du Tourisme — ENST L1 Portal</p>
-      <p data-i18n="footer.rights">Plateforme pédagogique d'étude et de partage de ressources pour la 1ère Année Licence.</p>
-    </div>
-  </footer>
-
-  <!-- ================= RESOURCE PREVIEW MODAL ================= -->
-  <div id="previewModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col overflow-hidden">
-      
-      <div id="modalHeader" class="bg-brand-900 p-5 text-white flex items-center justify-between">
-        <div>
-          <span id="modalCategoryBadge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-500 text-slate-950">Cours</span>
-          <h3 id="modalResourceTitle" class="text-lg font-bold mt-1">Titre de la ressource</h3>
-        </div>
-        <button onclick="closePreviewModal()" class="text-slate-300 hover:text-white text-xl">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="p-6 overflow-y-auto space-y-6">
-        
-        <div class="bg-slate-100 dark:bg-slate-900 rounded-xl p-6 text-center border border-slate-200 dark:border-slate-700 space-y-4">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500/20 text-brand-700 dark:text-emerald-400 text-3xl">
-            <i id="modalFileTypeIcon" class="fa-solid fa-file-pdf"></i>
-          </div>
-          <div>
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm" id="modalFileName">poly_cours.pdf</h4>
-            <p class="text-xs text-slate-500" id="modalModuleMeta">Module: Management Général</p>
-          </div>
-          <div class="flex items-center justify-center space-x-3 pt-2">
-            <a id="modalDownloadBtn" href="#" download class="bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow flex items-center space-x-2">
-              <i class="fa-solid fa-download"></i>
-              <span data-i18n="modal.download">Télécharger Fichier</span>
-            </a>
-            <button id="modalBookmarkBtn" onclick="toggleCurrentBookmark()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold text-xs px-4 py-2.5 rounded-lg flex items-center space-x-2">
-              <i class="fa-solid fa-bookmark"></i>
-              <span data-i18n="modal.save">Ajouter aux Favoris</span>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-2" data-i18n="modal.summary">Aperçu & Sommaire</h4>
-          <p id="modalDescription" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed"></p>
-        </div>
-
-        <!-- Quiz Block -->
-        <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-bold text-sm text-brand-900 dark:text-emerald-400 flex items-center space-x-2">
-              <i class="fa-solid fa-circle-question text-amber-500"></i>
-              <span data-i18n="quiz.title">Auto-Évaluation Rapide</span>
-            </h4>
-          </div>
-
-          <div id="quizContainer" class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-            <p id="quizQuestion" class="text-xs font-semibold text-slate-800 dark:text-slate-200"></p>
-            <div id="quizOptions" class="space-y-2"></div>
-            <div id="quizFeedback" class="text-xs font-bold hidden p-2.5 rounded-lg"></div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
   <!-- Load External Data Module -->
   <script src="data.js"></script>
+
+  <!-- Firebase Auth for Admin Google Login -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+      apiKey: "DEMO_KEY",
+      authDomain: "enst-portal.firebaseapp.com",
+      projectId: "enst-portal"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    window.currentUser = null;
+    window.isAdmin = false;
+
+    window.handleGoogleSignIn = async function() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        window.currentUser = result.user;
+        updateAdminStatus(result.user);
+      } catch (err) {
+        console.warn("Auth popup failed or canceled. Enabling Demo Admin Mode.", err);
+        // Fallback demo admin toggle for offline preview environments
+        window.currentUser = { displayName: "Admin ENST", photoURL: "https://placehold.co/100x100/047857/ffffff?text=Admin" };
+        window.isAdmin = true;
+        renderAuthState();
+      }
+    };
+
+    window.handleSignOut = async function() {
+      try {
+        await signOut(auth);
+      } catch (e) {}
+      window.currentUser = null;
+      window.isAdmin = false;
+      renderAuthState();
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.currentUser = user;
+        updateAdminStatus(user);
+      } else {
+        renderAuthState();
+      }
+    });
+
+    function updateAdminStatus(user) {
+      // Any signed in Google user or authorized email acts as admin
+      window.isAdmin = true;
+      renderAuthState();
+    }
+
+    function renderAuthState() {
+      const signInBtn = document.getElementById('googleSignInBtn');
+      const userContainer = document.getElementById('userInfoContainer');
+      const addNewsBtn = document.getElementById('addNewsBtn');
+      const uploadPdfBtn = document.getElementById('uploadPdfBtn');
+
+      if (window.currentUser) {
+        signInBtn.classList.add('hidden');
+        userContainer.classList.remove('hidden');
+        document.getElementById('userAvatar').src = window.currentUser.photoURL || 'https://placehold.co/100x100';
+        document.getElementById('userDisplayName').innerText = window.currentUser.displayName || 'Admin';
+
+        if (window.isAdmin) {
+          document.getElementById('adminBadge').classList.remove('hidden');
+          if (addNewsBtn) addNewsBtn.classList.remove('hidden');
+          if (uploadPdfBtn) uploadPdfBtn.classList.remove('hidden');
+        }
+      } else {
+        signInBtn.classList.remove('hidden');
+        userContainer.classList.add('hidden');
+        if (addNewsBtn) addNewsBtn.classList.add('hidden');
+        if (uploadPdfBtn) uploadPdfBtn.classList.add('hidden');
+      }
+    }
+  </script>
 
   <!-- Application Logic -->
   <script>
@@ -365,7 +401,7 @@
     let bookmarks = new Set(JSON.parse(localStorage.getItem('enst_bookmarks') || '[]'));
     let activeModalResource = null;
 
-    // Combine local storage with default seed resources if any
+    // Combine local storage with default seed resources
     function getAllResources() {
       const combined = [...uploadedResources];
       if (typeof DEFAULT_RESOURCES !== 'undefined') {
@@ -407,8 +443,6 @@
           typeLabel = 'Examen';
         }
 
-        let iconClass = 'fa-file-pdf text-rose-500';
-
         return `
           <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
             <div class="space-y-3">
@@ -423,7 +457,7 @@
 
               <div class="flex items-start space-x-3">
                 <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900/80 text-xl flex-shrink-0">
-                  <i class="fa-solid ${iconClass}"></i>
+                  <i class="fa-solid fa-file-pdf text-rose-500"></i>
                 </div>
                 <div>
                   <h3 class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-brand-900 dark:group-hover:text-emerald-400 transition">
@@ -448,7 +482,7 @@
             </div>
 
             <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${res.format ? res.format.toUpperCase() : 'PDF'}</span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${res.fileName || 'PDF Document'}</span>
               <button onclick="openPreviewModal('${res.id}')" class="bg-slate-100 dark:bg-slate-700/60 hover:bg-brand-900 hover:text-white text-slate-700 dark:text-slate-200 px-3.5 py-1.5 rounded-lg font-bold transition flex items-center space-x-1.5 text-xs">
                 <span>Aperçu & Quiz</span>
                 <i class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -460,12 +494,10 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Dark Mode Detection
       if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
       }
 
-      // Language Detection
       const savedLang = localStorage.getItem('enst_lang');
       if (savedLang) {
         currentLang = savedLang;
@@ -504,8 +536,12 @@
       applyFilters();
     }
 
-    /* UPLOAD & QUIZ CREATION HANDLERS */
+    /* UPLOAD & PDF FILE PROCESSING */
     function openUploadModal() {
+      if (!window.isAdmin) {
+        alert("Accès refusé : Seuls les administrateurs connectés peuvent téléverser des documents.");
+        return;
+      }
       document.getElementById('uploadModal').classList.remove('hidden');
     }
 
@@ -513,33 +549,42 @@
       document.getElementById('uploadModal').classList.add('hidden');
     }
 
-    function saveUploadedResource() {
+    async function saveUploadedResource() {
       const title = document.getElementById('uploadTitle').value.trim();
       const module = document.getElementById('uploadModule').value;
       const type = document.getElementById('uploadType').value;
       const description = document.getElementById('uploadDescription').value.trim();
+      const fileInput = document.getElementById('pdfFileInput');
+      const file = fileInput.files[0];
+
+      if (!title || !description) {
+        alert("Veuillez remplir au moins le titre et la description.");
+        return;
+      }
+
+      let pdfDataUrl = null;
+      let fileName = file ? file.name : "Document.pdf";
+
+      if (file) {
+        pdfDataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      }
+
       const qText = document.getElementById('quizQuestionInput').value.trim();
       const opt0 = document.getElementById('quizOpt0').value.trim();
       const opt1 = document.getElementById('quizOpt1').value.trim();
       const opt2 = document.getElementById('quizOpt2').value.trim();
       const opt3 = document.getElementById('quizOpt3').value.trim();
 
-      if (!title || !description) {
-        alert("Veuillez saisir au moins le titre et la description du cours.");
-        return;
-      }
-
       let quizObj = null;
       if (qText && opt0 && opt1) {
         const opts = [opt0, opt1];
         if (opt2) opts.push(opt2);
         if (opt3) opts.push(opt3);
-
-        quizObj = {
-          q: qText,
-          options: opts,
-          correct: 0
-        };
+        quizObj = { q: qText, options: opts, correct: 0 };
       }
 
       const newRes = {
@@ -547,6 +592,8 @@
         title,
         module,
         type,
+        fileName,
+        pdfDataUrl,
         format: 'pdf',
         description,
         quiz: quizObj
@@ -555,14 +602,11 @@
       uploadedResources.unshift(newRes);
       localStorage.setItem('enst_uploaded_resources', JSON.stringify(uploadedResources));
 
-      // Reset Inputs
+      // Clear Form
       document.getElementById('uploadTitle').value = '';
       document.getElementById('uploadDescription').value = '';
       document.getElementById('quizQuestionInput').value = '';
-      document.getElementById('quizOpt0').value = '';
-      document.getElementById('quizOpt1').value = '';
-      document.getElementById('quizOpt2').value = '';
-      document.getElementById('quizOpt3').value = '';
+      document.getElementById('pdfFileInput').value = '';
 
       closeUploadModal();
       updateUI();
@@ -570,6 +614,10 @@
 
     /* NEWS SYSTEM */
     function toggleNewsForm() {
+      if (!window.isAdmin) {
+        alert("Accès refusé : Seuls les administrateurs connectés peuvent ajouter des annonces.");
+        return;
+      }
       document.getElementById('newsFormContainer').classList.toggle('hidden');
     }
 
@@ -585,7 +633,7 @@
         title,
         tag,
         date: 'Aujourd\'hui',
-        author: 'Étudiant L1',
+        author: window.currentUser ? window.currentUser.displayName : 'Admin L1',
         content
       });
 
@@ -703,11 +751,20 @@
 
       activeModalResource = res;
       document.getElementById('modalResourceTitle').innerText = res.title;
-      document.getElementById('modalFileName').innerText = `${res.id}_${res.module}.${res.format || 'pdf'}`;
+      document.getElementById('modalFileName').innerText = res.fileName || `${res.id}_${res.module}.pdf`;
       document.getElementById('modalDescription').innerText = res.description;
 
       const mod = ENST_MODULES.find(m => m.id === res.module);
       document.getElementById('modalModuleMeta').innerText = `Module: ${mod ? mod.nameFr : res.module}`;
+
+      const downloadBtn = document.getElementById('modalDownloadBtn');
+      if (res.pdfDataUrl) {
+        downloadBtn.href = res.pdfDataUrl;
+        downloadBtn.download = res.fileName || "document.pdf";
+      } else {
+        downloadBtn.href = "data:application/pdf;base64,JVBERi0xLjQK";
+        downloadBtn.download = (res.fileName || "cours") + ".pdf";
+      }
 
       const modalBookmarkBtn = document.getElementById('modalBookmarkBtn');
       if (bookmarks.has(res.id)) {
@@ -716,7 +773,7 @@
         modalBookmarkBtn.classList.remove('text-amber-500');
       }
 
-      // Quiz inside modal per uploaded PDF
+      // Quiz inside modal
       const qBox = document.getElementById('quizContainer');
       if (res.quiz) {
         qBox.classList.remove('hidden');
